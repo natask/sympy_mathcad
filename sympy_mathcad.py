@@ -61,15 +61,33 @@ def parse_all(lines):
 if __name__ == "__main__":
     import sys
     if len(sys.argv) == 1:
-      print("welcome to repl")
+      print(
+f"""Welcome to repl.
+Enter equations in mathcad like format.
+Enter any substring of "evaluate" or empty line to evaluate equations.
+Enter any substring of "clear" to clear currently entered equations.
+Enter any substring of "print" to see currently entered equations.
+Enter any substring of "quit" to quit.
+Press C-c or C-d to quit.
+{"-"*30}END{"-"*30}""")
       lines = ""
       while True:
         line =  input()
-        if line == "parse":
+        if line in "evaluate":
           print("-"*30+"RES"+"-"*30)
           parse_all(lines)
           print("-"*30+"END"+"-"*30)
           lines = ""
+        elif line in "clear":
+          print("-"*30+"RES"+"-"*30)
+          lines = ""
+          print("-"*30+"END"+"-"*30)
+        elif line in "print":
+          print("-"*30+"RES"+"-"*30)
+          print(lines, end="")
+          print("-"*30+"END"+"-"*30)
+        elif line in "quit":
+          break
         else:
           lines += line + "\n"
     elif len(sys.argv) == 2:
