@@ -1,5 +1,6 @@
 #!/bin/env python3
 import sympy
+from sympy import *
 from sympy.physics.units import *
 
 def parse_line(line, sym_list, eq_list, res_list, conv_dict):
@@ -64,6 +65,8 @@ if __name__ == "__main__":
       print(
 f"""Welcome to repl.
 Enter equations in mathcad like format.
+Make sure terms are seperated by space in front and back of the term. 1 * x + y instead of 1*x+y.
+Make sure built-in terms like 'pi', and units like 'newton', DON'T have space in front of the term. like 1*pi intead of 1* pi.
 Enter any substring of "evaluate" or empty line to evaluate equations.
 Enter any substring of "clear" to clear currently entered equations.
 Enter any substring of "print" to see currently entered equations.
