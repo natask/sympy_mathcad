@@ -27,6 +27,15 @@ def print_res(res):
      #ret += "" if "sympy.core.numbers" not in str(type(res)) else " or " + "{:e}".format(sympy.N(res,4))
      return  ret;
 
+def print(*args, **kargs):
+    if len(args) >= 1:
+      new_args = []
+      for arg in args:
+        string = str(arg)
+        string = string.replace("**", "^")
+        new_args.append(string)
+      __builtins__.print(*new_args, **kargs)
+
 def parse_all(lines):
   sym_list = []
   eq_list = []
