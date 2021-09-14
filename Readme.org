@@ -1,0 +1,2 @@
+#+TITLE:sympy mathcad
+inspired by https://github.com/mkhan45/CalcuLaTeX
