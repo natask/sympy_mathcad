@@ -37,13 +37,22 @@ def parse_all(lines):
   for line in lines.split("\n"):
     if line:
       sym_list, eq_list, res_list, conv_list = parse_line(line, sym_list,  eq_list, res_list, conv_list)
-  sol = sympy.solve(eq_list, sym_list, dict=True) #want to use sym_list here
-  print(sol)
-  print(sympy.solve(eq_list, res_list, dict=True))
+  try:
+    sol = sympy.solve(eq_list, sym_list, dict=True) #want to use sym_list here
+    sol2 = sympy.solve(eq_list, res_list, dict=True)
+    print(sol)
+    print(sol2)
+  except:
+    sol = sympy.dsolve(eq_list, dict=True)
+    new_sol = []
+    for soll in sol:
+      new_sol.append({res_list[0] : soll.args[1] })
+    sol = new_sol
+    print(sol)
   for entry, conv in conv_list:
     dn = ""
     if len(sol) != 0:
-      val = sol[0][entry]
+      val = sol[0][entry] if entry in sol[0] else sol2[0][entry]
       if conv:
            val = sympy.physics.units.convert_to(val,conv)
       dn = print_res(val)

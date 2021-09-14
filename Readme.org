@@ -4,11 +4,13 @@ Inspired by https://github.com/mkhan45/CalcuLaTeX.
 
 Wanted something that solved equations as well.
 
-Based on sympy. Utilizes sympy's solve function. Supports sympy syntax like units, pi, integrals and so on.
+Based on sympy. Utilizes sympy's solve function. Supports sympy syntax like units, pi, integrals and so on. Works well enough. Software is in "get something working" state. Good enough for my purpose.
 
 Look at tips before using.
 
 has both repl and input file version.
+
+
 ** Usage
 ./sympy_mathcad.py
 
@@ -20,9 +22,45 @@ has both repl and input file version.
 - Make sure terms are separated by space in front and back of the term. 1 * x + y instead of 1*x+y.
 - Make sure built-in terms like 'pi', and units like 'newton', DON'T have space in front of the term. like 1*pi intead of 1* pi.
 - append "`" to statements you would like sympy to evaluate. This is used to set variables, create units and what ever you find useful.
-**  Example
+**  Examples
+run in REPL
+*** Integrals
+#+begin_src python
+pu = integrate( 3 * x, x ) + x *newton
+x = 20*newton
+pu = ?
+#+end_src
+- Result ::
+#+begin_src python
+{pu: 620*newton**2, x: 20*newton}]
+[{pu: newton*x + 3*x**2/2}]
+pu  =  620.0*newton**2
+#+end_src
+*** Integrals(2)
+#+begin_src python
+pu *newton = integrate( 3/newton * x, x ) + x
+x = ?
+#+end_src
+- Result ::
+#+begin_src python
+[{pu: x*(2*newton + 3*x)/(2*newton**2)}]
+[{x: newton*(-sqrt(6*pu + 1)/3 - 1/3)}, {x: newton*(sqrt(6*pu + 1)/3 - 1/3)}]
+x  =  newton*(-0.8165*(pu + 0.1667)**0.5 - 0.3333)
+#+end_src
+*** Diff eq
+#+begin_src python
+f = Function('f')`
+Derivative(f(x), x, x) + 9*f(x) = 0
+f(x) = ?
+#+end_src
+- Result ::
+#+begin_src python
+[Eq(9*f(x) + Derivative(f(x), (x, 2)), 0)]
+[{f(x): C1*sin(3*x)/3 + C2*cos(3*x)/3}]
+f(x)  =  0.3333*C1*sin(3*x) + 0.3333*C2*cos(3*x)
+#+end_src
+*** define and use units
 in REPL
-
 ./sympy_mathcad.py
 #+begin_src python
 letter = Quantity("letter")`

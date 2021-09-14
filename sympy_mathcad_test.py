@@ -15,3 +15,28 @@ pu2 = ? newton
 """;
 
 parse_all(lines);
+
+lines = """
+pu = integrate( 3 * x, x ) + x *newton
+x = 20*newton
+pu = ?
+""";
+
+parse_all(lines);
+
+
+lines = """
+pu *newton = integrate( 3/newton * x, x ) + x
+x = ?
+""";
+
+parse_all(lines);
+
+
+lines = """
+f = Function('f')`
+Derivative(f(x), x, x) + 9*f(x) = 0
+f(x) = ?
+""";
+
+parse_all(lines);
