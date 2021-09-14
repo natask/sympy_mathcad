@@ -1,8 +1,9 @@
 #!/bin/env python3
 
-from sympy_mathcad import parse_all
-
 lines = """
+letter = Quantity("letter")`
+word = Quantity("word")`
+word.set_global_relative_scale_factor(5,letter)`
 pu = 3*newton + 20 * kilogram*meter/second^2
 pu2 = 3*newton + 20 * kilogram*meter/second^2
 gpt_size = 1*mile

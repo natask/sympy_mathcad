@@ -1,2 +1,47 @@
 #+TITLE:sympy mathcad
-inspired by https://github.com/mkhan45/CalcuLaTeX
+** Motivation
+Inspired by https://github.com/mkhan45/CalcuLaTeX.
+
+Wanted something that solved equations as well.
+
+Based on sympy. Utilizes sympy's solve function. Supports sympy syntax like units, pi, integrals and so on.
+
+Look at tips before using.
+
+has both repl and input file version.
+** Usage
+./sympy_mathcad.py
+
+./sympy_mathcad.py input-file
+
+
+** Tips
+- Enter equations in mathcad like format.
+- Make sure terms are separated by space in front and back of the term. 1 * x + y instead of 1*x+y.
+- Make sure built-in terms like 'pi', and units like 'newton', DON'T have space in front of the term. like 1*pi intead of 1* pi.
+- append "`" to statements you would like sympy to evaluate. This is used to set variables, create units and what ever you find useful.
+**  Example
+in REPL
+
+./sympy_mathcad.py
+#+begin_src python
+letter = Quantity("letter")`
+word = Quantity("word")`
+word.set_global_relative_scale_factor(5,letter)`
+
+gpt_size = 45e12*bit
+file_size = 304e5*bit
+file_words = 48902*word
+gpt_words / gpt_size = file_words / file_size
+gpt_words = ?
+gpt_words = ? letter
+e
+#+end_src
+
+- Result ::
+#+begin_src python
+[{file_size: 30400000.0*bit, file_words: 48902.0*word, gpt_size: 45000000000000.0*bit, gpt_words: 72387828947.3684*word}]
+[{gpt_words: file_words*gpt_size/file_size}]
+gpt_words  =  7.239e+10*word
+gpt_words  =  3.619e+11*letter
+#+end_src
