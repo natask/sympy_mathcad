@@ -62,6 +62,7 @@ def parse_all(lines):
       new_sol.append({res_list[0] : soll.args[1] })
     sol = new_sol
     print(sol)
+
   for entry, conv in conv_list:
     dn = ""
     if len(sol) != 0:
@@ -76,14 +77,15 @@ def parse_all(lines):
     print(entry, " = ", dn)
 
 def reset_repl():
- import sys
- __here__ = sys.modules[__name__]
- try:
-  delattr(__here__, '__package__')
-  delattr(__here__, 'gram')
- except:
-   pass
- from sympy_mathcad import parse_all, print, parse_line, print_res, reset_repl
+  pass
+ # import sys
+ # __here__ = sys.modules[__name__]
+ # try:
+ #  delattr(__here__, '__package__')
+ #  delattr(__here__, 'gram')
+ # except:
+ #   pass
+ # from sympy_mathcad import parse_all, print, parse_line, print_res, reset_repl
 
 
 if __name__ == "__main__":
@@ -141,19 +143,18 @@ if __name__ == "__main__":
 
     @bindings.add('escape','enter') #r for run/execute
     @bindings.add('c-r') #r for run/execute
-    def _(event):
+    def _(event): # trancates evaluation at some part of parse_all if don't put new line before calling run.
       " Do something if 'a' has been pressed. "
       #event.app.layout.current_window.content.buffer.text += "\n" + "e\n"
       global lines
-      lines += event.current_buffer.text + "\n" if event.current_buffer.text else "";
+      add_str = event.current_buffer.text + "\n\n" if event.current_buffer.text else "";
+      lines = lines + add_str;
       event.current_buffer.append_to_history()
       event.current_buffer.reset()
       print()
-      print(lines)
       print("-"*30+"RES"+"-"*30)
       parse_all(lines)
       print("-"*30+"END"+"-"*30)
-      #reset_repl()
       lines = ""
 
     if len(sys.argv) == 1:
