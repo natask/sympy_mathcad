@@ -6,6 +6,10 @@ from sympy.physics.units import *
 def parse_line(line, sym_list, eq_list, res_list, conv_list):
   if "`" in line:
     exec(line[:line.find("`")], globals())
+    try:
+      print(eval(line[:line.find("`")]))
+    except:
+      pass
   elif "?" in line:
     sym = sympy.var(line[:line.find("=")])
     res_list.append(sym)
@@ -28,13 +32,13 @@ def print_res(res):
      return  ret;
 
 def print(*args, **kargs):
-    if len(args) >= 1:
-      new_args = []
-      for arg in args:
-        string = str(arg)
-        string = string.replace("**", "^")
-        new_args.append(string)
-      __builtins__.print(*new_args, **kargs)
+    new_args = []
+    for arg in args:
+      string = str(arg)
+      string = string.replace("**", "^")
+      new_args.append(string)
+    __builtins__.print(*new_args, **kargs)
+
 
 def parse_all(lines):
   sym_list = []
@@ -71,8 +75,87 @@ def parse_all(lines):
     dn = dn if dn else "NONE";
     print(entry, " = ", dn)
 
+def reset_repl():
+ import sys
+ __here__ = sys.modules[__name__]
+ try:
+  delattr(__here__, '__package__')
+  delattr(__here__, 'gram')
+ except:
+   pass
+ from sympy_mathcad import parse_all, print, parse_line, print_res, reset_repl
+
+
 if __name__ == "__main__":
     import sys
+    from prompt_toolkit import prompt
+    from prompt_toolkit.history import FileHistory
+    from prompt_toolkit.key_binding import KeyBindings
+
+    bindings = KeyBindings()
+
+    @bindings.add('c-q')
+    @bindings.add('c-c')
+    @bindings.add('c-d')
+    def _(event):
+      event.app.exit()
+
+    @bindings.add('c-j') #j for default eval
+    def _(event):
+      " Do something if 'a' has been pressed. "
+      #event.app.layout.current_window.content.buffer.text += "\n" + "e\n"
+      print()
+      print("-"*30+"RES"+"-"*30)
+      parse_all((event.current_buffer.text) + "`")
+      print("-"*30+"END"+"-"*30)
+      reset_repl()
+      event.current_buffer.append_to_history()
+      event.current_buffer.reset()
+
+    @bindings.add('c-s') #s for show
+    def _(event):
+      " Do something if 'a' has been pressed. "
+      #event.app.layout.current_window.content.buffer.text += "\n" + "e\n"
+      global lines
+      lines += event.current_buffer.text + "\n" if event.current_buffer.text else "";
+      print()
+      print("-"*30+"RES"+"-"*30)
+      print(lines, end="")
+      print("-"*30+"END"+"-"*30)
+      event.current_buffer.append_to_history()
+      event.current_buffer.reset()
+
+    @bindings.add('c-f') #f for flush
+    def _(event):
+      " Do something if 'a' has been pressed. "
+      #event.app.layout.current_window.content.buffer.text += "\n" + "e\n"
+      #print("-"*30+"RES"+"-"*30)
+      global lines
+      event.current_buffer.append_to_history()
+      event.current_buffer.reset()
+      reset_repl()
+      lines = ""
+      print()
+      print("-"*30+"END"+"-"*30)
+      print("-"*30+"RES"+"-"*30)
+
+    @bindings.add('escape','enter') #r for run/execute
+    @bindings.add('c-r') #r for run/execute
+    def _(event):
+      " Do something if 'a' has been pressed. "
+      #event.app.layout.current_window.content.buffer.text += "\n" + "e\n"
+      global lines
+      lines += event.current_buffer.text + "\n" if event.current_buffer.text else "";
+      event.current_buffer.append_to_history()
+      event.current_buffer.reset()
+      print()
+      print(lines)
+      print("-"*30+"RES"+"-"*30)
+      parse_all(lines)
+      print("-"*30+"END"+"-"*30)
+      #reset_repl()
+      lines = ""
+
     if len(sys.argv) == 1:
       print(
 f"""Welcome to repl.
@@ -83,30 +166,37 @@ Enter any substring of "evaluate" to evaluate equations.
 Enter any substring of "clear" to clear currently entered equations.
 Enter any substring of "print" to see currently entered equations.
 Enter any substring of "quit" to quit.
-Press C-c or C-d to quit.
+Press C-j to evaluate current line as a python statement.
+Press C-c or C-q or C-d to quit.
 {"-"*30}END{"-"*30}""")
+      global lines
       lines = ""
       while True:
-        line =  input()
-        if not line.strip():
-          pass
-        elif line in "evaluate":
-          print("-"*30+"RES"+"-"*30)
-          parse_all(lines)
-          print("-"*30+"END"+"-"*30)
-          lines = ""
-        elif line in "clear":
-          print("-"*30+"RES"+"-"*30)
-          lines = ""
-          print("-"*30+"END"+"-"*30)
-        elif line in "print":
-          print("-"*30+"RES"+"-"*30)
-          print(lines, end="")
-          print("-"*30+"END"+"-"*30)
-        elif line in "quit":
-          break
+        line =  prompt(history=FileHistory('history.txt'), key_bindings=bindings)
+        if line:
+          if not line.strip():
+            pass
+          elif line in "evaluate":
+            print("-"*30+"RES"+"-"*30)
+            parse_all(lines)
+            print("-"*30+"END"+"-"*30)
+            reset_repl()
+            lines = ""
+          elif line in "clear":
+            print("-"*30+"RES"+"-"*30)
+            reset_repl()
+            lines = ""
+            print("-"*30+"END"+"-"*30)
+          elif line in "print":
+            print("-"*30+"RES"+"-"*30)
+            print(lines, end="")
+            print("-"*30+"END"+"-"*30)
+          elif line in "quit":
+            break
+          else:
+            lines += line + "\n"
         else:
-          lines += line + "\n"
+          break
     elif len(sys.argv) == 2:
       with open(sys.argv[1]) as f:
         parse_all(f.read())
