@@ -12,18 +12,104 @@ has both repl and input file version.
 
 
 ** Usage
-./sympy_mathcad.py
-
-./sympy_mathcad.py input-file
-
-
+- ./sympy_mathcad.py ::
+  + opens repl
+- ./sympy_mathcad.py input-file ::
+  + read and evaluate input-file
+- ./sympy_mathcad.py term << ::
+  - read from stdin and evaluate. input through here-doc.
 ** Tips
 - Enter equations in mathcad like format.
+- Press enter and then C-r to evaluate. Useful for multi line equations.
+- Press Alt-enter to evaluate directly.
 - Make sure terms are separated by space in front and back of the term. 1 * x + y instead of 1*x+y.
 - Make sure built-in terms like 'pi', and units like 'newton', DON'T have space in front of the term. like 1*pi intead of 1* pi.
 - append "`" to statements you would like sympy to evaluate. This is used to set variables, create units and what ever you find useful.
 **  Examples
 run in REPL
+*** simple example
+#+begin_src python
+y = 3 * x
+y = 10
+x = ?
+#+end_src
+- RESULTS ::
+#+begin_src python
+[x]
+[{y: 10, x: 10/3}]
+[{x: y/3}]
+x  =  3.333
+#+end_src
+*** define and use units
+in REPL
+./sympy_mathcad.py
+#+begin_src python
+letter = Quantity("letter")`
+word = Quantity("word")`
+word.set_global_relative_scale_factor(5,letter)`
+
+gpt_size = 45e12*bit
+file_size = 304e5*bit
+file_words = 48902*word
+gpt_words / gpt_size = file_words / file_size
+gpt_words = ?
+gpt_words = ? letter
+e
+#+end_src
+
+- Result ::
+#+begin_src python
+[{file_size: 30400000.0*bit, file_words: 48902.0*word, gpt_size: 45000000000000.0*bit, gpt_words: 72387828947.3684*word}]
+[{gpt_words: file_words*gpt_size/file_size}]
+gpt_words  =  7.239e+10*word
+gpt_words  =  3.619e+11*letter
+#+end_src
+*** Numerical
+- caveats ::
+  - each variable needs to be defined with ?.
+  - need to a guess for value after "~" after "?".
+#+begin_src python
+lasting_component = b * x * 1.30 ^ ( x / 12 )
+temp_component = n * x * 1.30 ^ ( x / 12 )
+130000 = temp_component
+650000 - 130000 = lasting_component + (10400 - 6871 + 1105) * ( last - x ) * 1.30 ^ (( last - x ) / 12)
+n + b = 1105
+last = 100
+n = ? ~ 100
+b = ? ~ 100
+last = ? ~ 144
+lasting_component = ? ~ 100000
+temp_component = ? ~ 130000
+x = ? ~ 60
+#+end_src
+- Result ::
+#+begin_src python
+-trying numerical solve--
+[Eq(lasting_component, 1.3^(x/12)*b*x), Eq(temp_component, 1.3^(x/12)*n*x), Eq(130000, temp_component), Eq(520000, 1.3^(last/12 - x/12)*(4634*last - 4634*x) + lasting_component), Eq(b + n, 1105), Eq(last, 100)]
+[{n: 493.329807256738, b: 611.670192743262, last: 100.000000000000, lasting_component: 161184.513659930, temp_component: 130000.000000000, x: 64.4261206872098}]
+n  =  493.3
+b  =  611.7
+last  =  100.0
+lasting_component  =  1.612e+5
+temp_component  =  1.300e+5
+x  =  64.43
+#+end_src
+*** inequalities
+- caveats ::
+  - doesn't work with multiple variable equations
+  - returns an Eq object
+  - doesn't use units
+#+begin_src python
+x > 0
+3423 = x ^ 4
+x = ? mile
+#+end_src
+- Result ::
+#+begin_src python
+Eq(x, 3423^(1/4))
+Eq(x, 3423^(1/4))
+x  =  Eq(x, 3423^(1/4))
+#+end_src
 *** Integrals
 #+begin_src python
 pu = integrate( 3 * x, x ) + x *newton
@@ -58,28 +144,4 @@ f(x) = ?
 [Eq(9*f(x) + Derivative(f(x), (x, 2)), 0)]
 [{f(x): C1*sin(3*x)/3 + C2*cos(3*x)/3}]
 f(x)  =  0.3333*C1*sin(3*x) + 0.3333*C2*cos(3*x)
-#+end_src
-*** define and use units
-in REPL
-./sympy_mathcad.py
-#+begin_src python
-letter = Quantity("letter")`
-word = Quantity("word")`
-word.set_global_relative_scale_factor(5,letter)`
-
-gpt_size = 45e12*bit
-file_size = 304e5*bit
-file_words = 48902*word
-gpt_words / gpt_size = file_words / file_size
-gpt_words = ?
-gpt_words = ? letter
-e
-#+end_src
-
-- Result ::
-#+begin_src python
-[{file_size: 30400000.0*bit, file_words: 48902.0*word, gpt_size: 45000000000000.0*bit, gpt_words: 72387828947.3684*word}]
-[{gpt_words: file_words*gpt_size/file_size}]
-gpt_words  =  7.239e+10*word
-gpt_words  =  3.619e+11*letter
 #+end_src
