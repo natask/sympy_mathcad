@@ -5,9 +5,17 @@ from sympy.physics.units import *
 
 def parse_line(line, sym_list, eq_list, res_list, conv_list, guess_list, inequality):
   if "`" in line:
+    sym_list += sympy.var(line)
     exec(line[:line.find("`")], globals())
     try:
       print(eval(line[:line.find("`")]))
+    except:
+      pass
+  elif ";" in line:
+    sym_list += sympy.var(line)
+    exec(line[:line.find(";")], globals())
+    try:
+      print(eval(line[:line.find(";")]))
     except:
       pass
   elif "?" in line:
@@ -118,6 +126,8 @@ if __name__ == "__main__":
     from prompt_toolkit import prompt
     from prompt_toolkit.history import FileHistory
     from prompt_toolkit.key_binding import KeyBindings
+    import os
+    HISTORY_FILE = os.path.join(os.path.dirname(os.path.realpath(__file__)), "history.txt")
 
     bindings = KeyBindings()
 
@@ -218,7 +228,7 @@ Press C-c or C-q or C-d to quit.
       global lines
       lines = ""
       while True:
-        line =  prompt(history=FileHistory('history.txt'), key_bindings=bindings)
+        line =  prompt(history=FileHistory(HISTORY_FILE), key_bindings=bindings)
         if line:
           if not line.strip():
             pass
