@@ -19,13 +19,21 @@ has both repl and input file version.
 - ./sympy_mathcad.py term << ::
   - read from stdin and evaluate. input through here-doc.
 ** Tips
-- Enter equations in mathcad like format.
-- Press enter and then C-r to evaluate. Useful for multi line equations.
-- Press Alt-enter to evaluate directly.
-- Make sure terms are separated by space in front and back of the term. 1 * x + y instead of 1*x+y.
-- Make sure built-in terms like 'pi', and units like 'newton', DON'T have space in front of the term. like 1*pi intead of 1* pi.
-- append "`" to statements you would like sympy to evaluate. This is used to set variables, create units and what ever you find useful.
+- Press Enter to enter equations in mathcad like format. can be used to enter multi line equations. This is useful for keeping history intact.
+- Press Alt-Enter or C-r to evaluate equations. Needs to be preceded by an Enter.
+- Press C-f to flush or clear currently entered equations.
+- Press C-s to show or print currently entered equations.
+- Press C-c or C-q or C-d to quit.
+
+- text based ::
+- Enter any substring of "evaluate" to evaluate equations.
+- Enter any substring of "clear" to clear currently entered equations.
+- Enter any substring of "print" to see currently entered equations.
+- Enter any substring of "quit" to quit.
 **  Examples
+:PROPERTIES:
+:ID:       5253fc80-b45f-47cb-ae67-488131d16414
+:END:
 run in REPL
 *** simple example
 #+begin_src python
@@ -44,9 +52,9 @@ x  =  3.333
 in REPL
 ./sympy_mathcad.py
 #+begin_src python
-letter = Quantity("letter")`
-word = Quantity("word")`
-word.set_global_relative_scale_factor(5,letter)`
+letter = Quantity("letter");
+word = Quantity("word");
+word.set_global_relative_scale_factor(5,letter);
 
 gpt_size = 45e12*bit
 file_size = 304e5*bit
@@ -85,7 +93,6 @@ x = ? ~ 60
 - Result ::
 #+begin_src python
 -trying numerical solve--
-[Eq(lasting_component, 1.3^(x/12)*b*x), Eq(temp_component, 1.3^(x/12)*n*x), Eq(130000, temp_component), Eq(520000, 1.3^(last/12 - x/12)*(4634*last - 4634*x) + lasting_component), Eq(b + n, 1105), Eq(last, 100)]
 [{n: 493.329807256738, b: 611.670192743262, last: 100.000000000000, lasting_component: 161184.513659930, temp_component: 130000.000000000, x: 64.4261206872098}]
 n  =  493.3
 b  =  611.7
@@ -135,7 +142,7 @@ x  =  newton*(-0.8165*(pu + 0.1667)**0.5 - 0.3333)
 #+end_src
 *** Diff eq
 #+begin_src python
-f = Function('f')`
+f = Function('f');
 Derivative(f(x), x, x) + 9*f(x) = 0
 f(x) = ?
 #+end_src

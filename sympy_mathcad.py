@@ -1,44 +1,66 @@
 #!/bin/env python3
 import sympy
+import ast
 from sympy import *
 from sympy.physics.units import *
 
+DEFINED_EXPRESSIONS = []
+def define_vars(var_string):
+  root_node = ast.parse(var_string.replace("=","+")); #equal sign messes up parser
+  node_names = [node.id for node in ast.walk(root_node) if type(node) == ast.Name]
+  old_syms = [sym for (name,sym) in globals().items() if type(sym) == sympy.core.symbol.Symbol]; #TODO: I would want to store all syms and flush them when session ends so I can redefine them in the next session
+  new_syms = [sympy.var(name) for name in node_names if not name in globals()];
+  replace_names = [name for name in DEFINED_EXPRESSIONS if name in node_names];
+  [DEFINED_EXPRESSIONS.remove(name) for name in replace_names];
+  replace_syms = [sympy.var(name) for name in replace_names];
+  return new_syms + old_syms + replace_syms
+
+def define_expressions(var_string):
+  global DEFINED_EXPRESSIONS;
+  root_node = ast.parse(var_string[:var_string.find("=")]); #removes ";" at the end if "=" not found and still parses correctly
+  node_names = [node.id for node in ast.walk(root_node) if type(node) == ast.Name]
+  expressions = [name for name in node_names if not name in globals()];
+  DEFINED_EXPRESSIONS += expressions
+
 def parse_line(line, sym_list, eq_list, res_list, conv_list, guess_list, inequality):
-  if "`" in line:
-    sym_list += sympy.var(line)
-    exec(line[:line.find("`")], globals())
+  if ";" in line: # eval line in python mode
+    define_expressions(line)
+    sym_list += define_vars(line)
+    exec(line, globals())
     try:
-      print(eval(line[:line.find("`")]))
+      res = (eval(line[:line.find(";")]))
+      if a != None:
+        print(res)
     except:
       pass
-  elif ";" in line:
-    sym_list += sympy.var(line)
-    exec(line[:line.find(";")], globals())
-    try:
-      print(eval(line[:line.find(";")]))
-    except:
-      pass
-  elif "?" in line:
+  elif "?" in line: # find this variable
     sym = sympy.var(line[:line.find("=")])
     res_list.append(sym)
     if line.find("~") != -1:
       guess_list.append(float(line[line.find("~") + 1:]))
-    else:
-      conv = (sym, None)
-      if len(val := line[line.find("?") + 1:].strip()):
-        conv = (sym, eval(val))
-      conv_list.append(conv)
+    conv = (sym, None)
+    if len(val := line[line.find("?") + 1:].strip()):
+       conv = (sym, eval(val))
+    conv_list.append(conv)
   else:
     #equation = line[:line.find("=", line.find("=") + 1)]
     equation = line
-    sym_list += sympy.var(equation)
+    sym_list += define_vars(equation)
     if (">" in equation or "<" in equation): # inequalities don't seem to work for solving multiple equations
       str_eq = equation
       inequality = True
+      eq = eval(str_eq)
+      eq_list.append(eq)
     elif "=" in equation and not (">" in equation or "<" in equation): # inequalities don't seem to work for solving multiple equations
        str_eq = "sympy.Eq(" + equation.replace("=",",") + ")"
-    eq = eval(str_eq)
-    eq_list.append(eq)
+       eq = eval(str_eq)
+       eq_list.append(eq)
+    else: # must be a single line
+      exec(line, globals())
+      try:
+        print(eval(line))
+      except:
+        pass
   return (sym_list, eq_list,res_list, conv_list, guess_list, inequality)
 
 def print_res(res):
@@ -77,12 +99,12 @@ def parse_all(lines):
   except:
     try: #numerical solve
       print("--trying numerical solve--")
-      print(eq_list)
-      print(res_list)
-      print(guess_list)
+      #print(eq_list)
+      #print(res_list)
+      #print(guess_list)
       sol2 = sympy.nsolve(eq_list, res_list, guess_list, dict=True)
       sol = sol2
-      print(eq_list)
+      #print(eq_list)
       print(sol2)
     except Exception as e: #diff eq
       print(e)
@@ -94,6 +116,7 @@ def parse_all(lines):
         sol = new_sol
         print(sol)
 
+  print(conv_list)
   for entry, conv in conv_list:
     dn = ""
     if inequality:
@@ -135,18 +158,6 @@ if __name__ == "__main__":
     def _(event):
       event.app.exit()
 
-    @bindings.add('c-j') #j for default eval
-    def _(event):
-      " Do something if 'a' has been pressed. "
-      #event.app.layout.current_window.content.buffer.text += "\n" + "e\n"
-      print()
-      print("-"*30+"RES"+"-"*30)
-      parse_all((event.current_buffer.text) + "`")
-      print("-"*30+"END"+"-"*30)
-      reset_repl()
-      event.current_buffer.append_to_history()
-      event.current_buffer.reset()
-
     @bindings.add('c-s') #s for show
     def _(event):
       " Do something if 'a' has been pressed. "
@@ -175,6 +186,7 @@ if __name__ == "__main__":
       print("-"*30+"RES"+"-"*30)
 
     @bindings.add('c-r') #r for run/execute
+    @bindings.add('escape','enter') #r for run/execute
     def _(event): # trancates evaluation at some part of parse_all if don't put new line before calling run.
       " Do something if 'a' has been pressed. "
       #event.app.layout.current_window.content.buffer.text += "\n" + "e\n"
@@ -189,10 +201,6 @@ if __name__ == "__main__":
       parse_all(lines)
       print("-"*30+"END"+"-"*30)
       lines = ""
-
-    @bindings.add('escape','enter') #r for run/execute
-    def _(event):
-      event.current_buffer.validate_and_handle();
 
     @bindings.add('enter') #r for run/execute
     def _(event):
@@ -213,17 +221,17 @@ if __name__ == "__main__":
     if len(sys.argv) == 1:
       print(
 f"""Welcome to repl.
-Alt-Enter equations in mathcad like format.
-Make sure terms are seperated by space in front and back of the term. 1 * x + y instead of 1*x+y.
-Make sure built-in terms like 'pi', and units like 'newton', DON'T have space in front of the term. like 1*pi intead of 1* pi.
-Alt-Enter any substring of "evaluate" to evaluate equations.
-Alt-Enter any substring of "clear" to clear currently entered equations.
-Alt-Enter any substring of "print" to see currently entered equations.
-Alt-Enter any substring of "quit" to quit.
-Enter to enter multi line equations. This is useful for keeping history intact.
-Press C-j to evaluate current line as a python statement.
-Press C-r to evaluate equations. Needs to be preceded by an Enter.
+Press Enter to enter equations in mathcad like format. can be used to enter multi line equations. This is useful for keeping history intact.
+Press Alt-Enter or C-r to evaluate equations. Needs to be preceded by an Enter.
+Press C-f to flush or clear currently entered equations.
+Press C-s to show or print currently entered equations.
 Press C-c or C-q or C-d to quit.
+
+text based:
+Enter any substring of "evaluate" to evaluate equations.
+Enter any substring of "clear" to clear currently entered equations.
+Enter any substring of "print" to see currently entered equations.
+Enter any substring of "quit" to quit.
 {"-"*30}END{"-"*30}""")
       global lines
       lines = ""
