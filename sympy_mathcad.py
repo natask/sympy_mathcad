@@ -23,16 +23,18 @@ def define_expressions(var_string):
   DEFINED_EXPRESSIONS += expressions
 
 def parse_line(line, sym_list, eq_list, res_list, conv_list, guess_list, inequality):
-  if ";" in line: # eval line in python mode
+  if (isColon := ";" in line) or "`" in line: # eval line in python mode
+#    print(isColon)
+    line = line.replace("`", ";")
     define_expressions(line)
     sym_list += define_vars(line)
     exec(line, globals())
-    try:
-      res = (eval(line[:line.find(";")]))
-      if a != None:
-        print(res)
-    except:
-      pass
+#    try:
+#      res = (eval(line[:line.find(";" if isColon else "`")]))
+#      if a != None:
+#        print(res)
+#    except:
+#      pass
   elif "?" in line: # find this variable
     sym = sympy.var(line[:line.find("=")])
     res_list.append(sym)
@@ -76,11 +78,23 @@ def print(*args, **kargs):
       new_args.append(string)
     __builtins__.print(*new_args, **kargs)
 
+class ExtendedSet(set):
+    def append(self,item):
+        self.add(item)
+
+    def __iadd__(self, other):
+        if isinstance(other, list):
+            self.update(other)
+        elif isinstance(other, set):
+            self.update(other)
+        else:
+            raise TypeError(f"unsupported operand type(s) for +=: 'ExtendedSet' and '{type(other).__name__}'")
+        return self
 
 def parse_all(lines):
-  sym_list = []
+  sym_list = ExtendedSet()
   eq_list = []
-  res_list = []
+  res_list = ExtendedSet()
   conv_list = []
   guess_list = []
   inequality = False
@@ -92,11 +106,13 @@ def parse_all(lines):
   try:
     if guess_list:
       raise
+    print(eq_list, sym_list, res_list)
     sol = sympy.solve(eq_list, sym_list, dict=True) #want to use sym_list here
     sol2 = sympy.solve(eq_list, res_list, dict=True)
     print(sol)
     print(sol2)
-  except:
+  except Exception as e:
+    print(e)
     try: #numerical solve
       print("--trying numerical solve--")
       #print(eq_list)

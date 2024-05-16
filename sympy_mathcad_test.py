@@ -1,4 +1,5 @@
 #!/bin/env python3
+from sympy_mathcad import *
 
 lines = """
 letter = Quantity("letter")`
